@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#0d0b08">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Section Stitch">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/icon-180.png">
+<title>Section Stitch</title>
+<style>
+
+  :root{
+    --bg:#17130E; --panel:#211C15; --panel-2:#282219; --line:#382F23;
+    --ink:#EEE7D8; --mut:#A99C85; --faint:#736A58;
+    --ochre:#D49A3E; --ochre-hi:#E7AE4C; --hem:#C9694A; --sage:#8FA96E;
+    --r:12px;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.45;font-size:15px;
+    padding:0 0 96px;background-image:linear-gradient(180deg,rgba(212,154,62,.05),transparent 240px);}
+  .wrap{max-width:760px;margin:0 auto;padding:0 16px}
+  header{padding:22px 0 10px;border-bottom:1px solid var(--line);margin-bottom:16px}
+  .kick{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ochre)}
+  h1{font-size:23px;margin:6px 0 4px;letter-spacing:-.01em;font-weight:650}
+  .sub{color:var(--mut);font-size:13px;max-width:54ch}
+  h2{font-size:12px;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:22px 0 10px;font-weight:600}
+
+  .drop{position:relative;border:1.5px dashed var(--line);border-radius:var(--r);padding:26px 16px;text-align:center;
+    background:var(--panel);cursor:pointer;transition:.15s;color:var(--mut)}
+  .drop.hot{border-color:var(--ochre);background:var(--panel-2);color:var(--ink)}
+  .drop b{color:var(--ink);font-weight:600}
+  .drop small{display:block;margin-top:6px;font-size:12px;color:var(--faint)}
+  .drop input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0}
+  .cap{display:flex;align-items:center;justify-content:center;gap:8px;position:relative;margin-top:8px;padding:11px;
+    border:1px solid var(--line);border-radius:10px;background:var(--panel-2);color:var(--ink);
+    font-family:var(--mono);font-size:13px;letter-spacing:.02em;cursor:pointer;transition:.12s}
+  .cap:active{background:var(--line)}
+  .cap input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0}
+
+  .tray{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .frame{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px}
+  .frame .idx{font-family:var(--mono);font-size:12px;color:var(--ochre);width:26px;text-align:center;flex:none}
+  .frame img{width:46px;height:60px;object-fit:cover;border-radius:6px;flex:none;background:#000;border:1px solid var(--line)}
+  .frame .meta{flex:1;min-width:0}
+  .frame .nm{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .frame .dim{font-family:var(--mono);font-size:11px;color:var(--faint)}
+  .frame .ctl{display:flex;gap:4px;flex:none}
+  .ib{background:var(--panel-2);border:1px solid var(--line);color:var(--ink);width:32px;height:32px;border-radius:8px;font-size:15px;cursor:pointer;display:grid;place-items:center}
+  .ib:active{background:var(--line)} .ib.x{color:var(--hem)} .ib:disabled{opacity:.3}
+  .frame.excluded{opacity:.62;border-style:dashed}
+  .frame.excluded img{filter:grayscale(.7)}
+  .exbadge{display:inline-block;margin-left:8px;padding:1px 7px;border-radius:20px;font-size:10px;
+    background:rgba(201,105,74,.18);color:var(--hem);font-family:var(--mono);letter-spacing:.02em;vertical-align:middle}
+  .ib.keep{width:auto;padding:0 10px;font-size:11px;font-family:var(--mono);color:var(--sage);
+    border-color:rgba(143,169,110,.5)}
+
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  button.act{flex:1;min-width:120px;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);padding:11px 12px;border-radius:10px;font-size:13.5px;cursor:pointer;font-family:var(--mono);letter-spacing:.02em;transition:.12s}
+  button.act:active{background:var(--line)} button.act:disabled{opacity:.4;cursor:default}
+
+  details.adv{margin-top:16px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel)}
+  details.adv>summary{cursor:pointer;padding:12px 14px;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);list-style:none}
+  details.adv>summary::-webkit-details-marker{display:none}
+  details.adv>summary::after{content:"+";float:right;color:var(--ochre)}
+  details.adv[open]>summary::after{content:"–"}
+  .opts{padding:2px 14px 14px}
+  .opt{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid var(--line)}
+  .opt:first-child{border-top:none}
+  .opt label{font-size:13px}
+  .opt .hint{display:block;color:var(--faint);font-size:11.5px;margin-top:1px;max-width:36ch}
+  .opt output{font-family:var(--mono);font-size:12px;color:var(--ochre);min-width:52px;text-align:right}
+  input[type=range]{width:100%;accent-color:var(--ochre)}
+  .sw{position:relative;width:46px;height:27px;flex:none}
+  .sw input{opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+  .sw span{position:absolute;inset:0;background:var(--line);border-radius:20px;transition:.15s;pointer-events:none}
+  .sw span::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:var(--faint);transition:.15s}
+  .sw input:checked + span{background:rgba(212,154,62,.35)}
+  .sw input:checked + span::after{transform:translateX(19px);background:var(--ochre-hi)}
+  .opt input[type=number]{width:90px;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px;font-family:var(--mono);font-size:13px}
+
+  .runbar{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(180deg,transparent,var(--bg) 30%);padding:12px 16px calc(12px + env(safe-area-inset-bottom));z-index:20}
+  .runbar .inner{max-width:760px;margin:0 auto;display:flex;gap:10px;align-items:center}
+  .run{flex:1;background:var(--ochre);color:#241800;border:none;border-radius:11px;padding:14px;font-weight:700;font-size:15px;cursor:pointer;letter-spacing:.01em}
+  .run:disabled{background:var(--panel-2);color:var(--faint);cursor:default}
+  .run:active:not(:disabled){background:var(--ochre-hi)}
+
+  .prog{margin-top:14px;display:none}
+  .bar{height:6px;background:var(--panel-2);border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+  .bar i{display:block;height:100%;width:0;background:var(--ochre);transition:width .2s}
+  .plog{font-family:var(--mono);font-size:11.5px;color:var(--mut);margin-top:6px;min-height:16px}
+
+  .seams{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+  .seam{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:7px 9px;font-family:var(--mono);font-size:11.5px}
+  .seam .join{color:var(--mut);flex:1}
+  .chip{padding:2px 7px;border-radius:20px;font-size:10.5px;letter-spacing:.04em;white-space:nowrap}
+  .chip.ok{background:rgba(143,169,110,.18);color:var(--sage)}
+  .chip.mid{background:rgba(212,154,62,.18);color:var(--ochre)}
+  .chip.low{background:rgba(201,105,74,.2);color:var(--hem)}
+  .nudge{display:flex;gap:3px}
+  .nudge button{width:26px;height:26px;border-radius:6px;border:1px solid var(--line);background:var(--panel-2);color:var(--ink);font-size:12px;cursor:pointer}
+  .nudge button:active{background:var(--line)}
+
+  .result{margin-top:16px}
+  .viewer{position:relative;border:1px solid var(--line);border-radius:var(--r);overflow:auto;background:#0d0b08;max-height:72vh}
+  .viewer canvas{display:block}
+  .rmeta{font-family:var(--mono);font-size:11.5px;color:var(--mut);margin:8px 0;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  a.dl{display:block;text-align:center;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);text-decoration:none;padding:12px;border-radius:10px;margin-top:10px;font-family:var(--mono);font-size:13px}
+  a.dl:active{background:var(--line)}
+  .banner{margin-top:12px;padding:10px 12px;border-radius:10px;font-size:12.5px;border:1px solid;display:none}
+  .banner.warn{display:block;border-color:rgba(201,105,74,.5);background:rgba(201,105,74,.12);color:#e8b3a2}
+  .banner.info{display:block;border-color:var(--line);background:var(--panel);color:var(--mut)}
+  .note{color:var(--faint);font-size:12px;margin-top:14px;line-height:1.5}
+  .note code{font-family:var(--mono);color:var(--mut)}
+
+/* PWA-specific: respect the notch, fill the screen */
+body{ padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="kick">Field&nbsp;·&nbsp;measured section</div>
+    <h1>Section</h1>
+    <div class="sub">Stitch a vertical run of outcrop photos into one continuous strat column. Feature-based registration (FAST + ORB + RANSAC) handles the tilt and scale drift of handheld shooting. Runs on-device, offline.</div>
+  </header>
+
+  <h2>Frames <span id="count" style="color:var(--faint)"></span></h2>
+  <div class="drop" id="drop">
+    <input type="file" id="file" accept="image/*" multiple>
+    <b>Add outcrop photos</b>
+    <small>Tap to choose, or drop here. Order them base→top or top→base — consistent overlap (~40–50%), staff or tape in frame.</small>
+  </div>
+  <label class="cap" id="capBtn"><input type="file" id="cap" accept="image/*" capture="environment">Take a photo</label>
+
+  <div class="tray" id="tray"></div>
+  <div class="row" id="tools" style="display:none">
+    <button class="act" id="btnOrder">↕ Sort by name</button>
+    <button class="act" id="btnRev">⇅ Reverse</button>
+    <button class="act" id="btnClear">✕ Clear all</button>
+  </div>
+
+  <details class="adv">
+    <summary>Registration settings</summary>
+    <div class="opts">
+      <div class="opt"><div><label>Working resolution</label><span class="hint">Per-frame width for matching & output. Higher = more detail, slower on phone.</span></div><output id="oRes">1200 px</output></div>
+      <div class="opt" style="padding-top:0;border-top:none"><input type="range" id="res" min="900" max="2000" step="100" value="1200"></div>
+
+      <div class="opt"><div><label>Matching engine</label><span class="hint">ORB is instant &amp; offline. XFeat is a GPU-accelerated neural matcher for weak-texture / low-overlap shots. Runs on WebGPU (Metal) when available.</span></div><select id="engine" style="padding:8px 10px;border-radius:10px;background:#1a1712;color:#e9e2d4;border:1px solid #3a342a;font-size:15px"><option value="orb">ORB (fast, built-in)</option><option value="xfeat">XFeat (neural, best for hard sets)</option></select></div>
+      <div class="opt"><div><label>Feature budget</label><span class="hint">Corners tracked per frame. More finds matches on weak texture but costs time.</span></div><output id="oFeat">3000</output></div>
+      <div class="opt" style="padding-top:0;border-top:none"><input type="range" id="feat" min="1000" max="6000" step="250" value="3000"></div>
+
+      <div class="opt"><div><label>Auto-clean frames</label><span class="hint">Set aside near-duplicate shots and photos that don’t match the sequence (reversible).</span></div><div class="sw"><input type="checkbox" id="clean" checked><span></span></div></div>
+      <div class="opt"><div><label>Lock scale</label><span class="hint">For constant-distance capture. Forces rigid fit (no zoom drift). Turn OFF if you shot at varying distance.</span></div><div class="sw"><input type="checkbox" id="lock"><span></span></div></div>
+      <div class="opt"><div><label>Feather blend</label><span class="hint">Cross-fade seams to hide exposure steps.</span></div><div class="sw"><input type="checkbox" id="feather" checked><span></span></div></div>
+      <div class="opt"><div><label>Match exposure</label><span class="hint">Level brightness between frames before blending.</span></div><div class="sw"><input type="checkbox" id="expo" checked><span></span></div></div>
+      <div class="opt"><div><label>Depth rail</label><span class="hint">Draw a tick ruler beside the column.</span></div><div class="sw"><input type="checkbox" id="rail" checked><span></span></div></div>
+      <div class="opt"><div><label>Section thickness</label><span class="hint">Total metres, base→top, for rail labels (optional).</span></div><input type="number" id="thick" placeholder="—" min="0" step="0.1"></div>
+    </div>
+  </details>
+
+  <div class="prog" id="prog"><div class="bar"><i id="barfill"></i></div><div class="plog" id="plog"></div></div>
+  <div class="banner" id="banner"></div>
+  <div class="seams" id="seams"></div>
+  <div class="result" id="result"></div>
+
+  <div class="note">
+    <b>How to read it.</b> Each seam shows an inlier count — the number of matched rock features that agreed on the alignment.
+    <code>≥25</code> is a firm lock, <code>10–25</code> usable, under that the seam fell back to a straight vertical stack and wants a look.
+    Use the <code>±</code> nudges to slide a frame and re-render. Registration allows translation, rotation and scale, so it corrects
+    handheld tilt and distance drift — but it stays a 2-D mosaic for logging, not a metric orthophoto. For scaled 3-D, use SfM.
+  </div>
+</div>
+
+<div class="runbar"><div class="inner"><button class="run" id="run" disabled>Stitch column</button></div></div>
+
+
+
+<script>
+window.addEventListener('error', function(e){ try{ var b=document.getElementById('banner'); if(!b)return;
+  var msg=(e&&e.message)?e.message:(e&&e.target&&e.target.src)?('failed to load resource: '+e.target.src):'unexpected error';
+  b.className='banner warn'; b.textContent='Problem: '+msg; }catch(_){}}, true);
+window.addEventListener('unhandledrejection', function(e){ try{ var b=document.getElementById('banner'); if(!b)return;
+  var r=e&&e.reason; var msg=(r&&r.message)?r.message:(typeof r==='string'?r:'unexpected async error');
+  b.className='banner warn'; b.textContent='Problem: '+msg; }catch(_){}}, true);
+</script>
+<script>
+window.addEventListener('error', function(e){
+  try{
+    var b=document.getElementById('banner');
+    if(!b) return;
+    var msg = (e && e.message) ? e.message
+      : (e && e.target && e.target.src) ? ('failed to load resource: '+e.target.src)
+      : 'unexpected error';
+    b.className='banner warn'; b.textContent='Problem: '+msg;
+  }catch(_){}
+}, true);
+window.addEventListener('unhandledrejection', function(e){
+  try{
+    var b=document.getElementById('banner'); if(!b) return;
+    var r=e && e.reason; var msg=(r&&r.message)?r.message:(typeof r==='string'?r:'unexpected async error');
+    b.className='banner warn'; b.textContent='Problem: '+msg;
+  }catch(_){}
+}, true);
+</script>
+<script type="module" src="./app.js"></script>
+<script>
+// Register the service worker for offline caching of the app shell + runtime + model.
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
+}
+</script>
+</body>
+</html>
